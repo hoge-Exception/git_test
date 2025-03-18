@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="#{menu.title}"></title>
+    <link th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}" rel="stylesheet">
+    <style>
+        .menu-card { height: 100%; }
+        .menu-card img { height: 150px; object-fit: cover; }
+        .tab-btn { margin: 5px; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container my-4">
+        <h1 class="text-center mb-4" th:text="#{menu.title}"></h1>
+        <div class="d-flex justify-content-center mb-4">
+            <a th:href="@{/(lang='ja')}" class="btn btn-outline-primary mx-1">日本語</a>
+            <a th:href="@{/(lang='en')}" class="btn btn-outline-primary mx-1">English</a>
+            <a th:href="@{/(lang='zh')}" class="btn btn-outline-primary mx-1">中文</a>
+        </div>
+        <div class="d-flex justify-content-center mb-4">
+            <button class="btn tab-btn" th:classappend="${currentTab == 'recommended' ? 'btn-primary' : 'btn-outline-primary'}" onclick="changeTab('recommended')" th:text="#{menu.recommended}"></button>
+            <button class="btn tab-btn" th:classappend="${currentTab == 'drink' ? 'btn-primary' : 'btn-outline-primary'}" onclick="changeTab('drink')" th:text="#{menu.drink}"></button>
+            <button class="btn tab-btn" th:classappend="${currentTab == 'fried' ? 'btn-primary' : 'btn-outline-primary'}" onclick="changeTab('fried')" th:text="#{menu.fried}"></button>
+            <button class="btn tab-btn" th:classappend="${currentTab == 'grilled' ? 'btn-primary' : 'btn-outline-primary'}" onclick="changeTab('grilled')" th:text="#{menu.grilled}"></button>
+        </div>
+
+        <form id="orderForm" th:action="@{/order}" method="post" class="mb-4">
+            <div class="row mb-3">
+                <label for="tableNumber" class="col-sm-2 col-form-label" th:text="#{menu.table_number}"></label>
+                <div class="col-sm-2">
+                    <input type="number" class="form-control" id="tableNumber" name="tableNumber" th:value="${tableNumber}" required/>
+                </div>
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div th:each="menu : ${menus}" class="col">
+                    <div class="card menu-card">
+                        <img th:src="${menu.imageUrl}" class="card-img-top" alt="Menu Image" th:unless="${menu.imageUrl == null}"/>
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${menu.name}"></h5>
+                            <p class="card-text" th:text="'$' + ${menu.price}"></p>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" th:id="${'menu-' + menu.id}" name="menuIds" th:value="${menu.id}"/>
+                                <label class="form-check-label" th:for="${'menu-' + menu.id}" th:text="#{menu.add_to_order}"></label>
+                            </div>
+                            <div class="input-group mt-2" style="max-width: 150px;">
+                                <button type="button" class="btn btn-outline-secondary" th:onclick="'decrementQuantity(\'' + ${menu.id} + '\')'">-</button>
+                                <input type="number" class="form-control text-center" th:name="${'quantity-' + menu.id}" min="1" value="1" disabled/>
+                                <button type="button" class="btn btn-outline-secondary" th:onclick="'incrementQuantity(\'' + ${menu.id} + '\')'">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="button" class="btn btn-success" onclick="confirmOrder()" th:text="#{menu.place_order}"></button>
+                <a th:href="@{/order-history(tableNumber=${tableNumber})}" class="btn btn-info ms-2" th:text="#{menu.view_order_history}"></a>
+                <a th:href="@{/menu-management}" class="btn btn-warning ms-2" th:text="#{menu.manage_menus}"></a>
+            </div>
+        </form>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+    <script>
+        const orderState = JSON.parse(localStorage.getItem('orderState')) || {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const menuId = checkbox.value;
+                const quantityInput = document.querySelector(`input[name="quantity-${menuId}"]`);
+                if (orderState[menuId]) {
+                    checkbox.checked = true;
+                    quantityInput.value = orderState[menuId];
+                    quantityInput.disabled = false;
+                } else {
+                    quantityInput.disabled = true;
+                }
+                checkbox.addEventListener('change', () => {
+                    quantityInput.disabled = !checkbox.checked;
+                    if (checkbox.checked) {
+                        orderState[menuId] = parseInt(quantityInput.value) || 1;
+                    } else {
+                        delete orderState[menuId];
+                    }
+                    localStorage.setItem('orderState', JSON.stringify(orderState));
+                });
+                quantityInput.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        orderState[menuId] = parseInt(quantityInput.value) || 1;
+                        localStorage.setItem('orderState', JSON.stringify(orderState));
+                    }
+                });
+            });
+        });
+
+        function incrementQuantity(menuId) {
+            const checkbox = document.getElementById(`menu-${menuId}`);
+            const quantityInput = document.querySelector(`input[name="quantity-${menuId}"]`);
+            if (checkbox.checked) {
+                let qty = parseInt(quantityInput.value) || 1;
+                quantityInput.value = qty + 1;
+                orderState[menuId] = qty + 1;
+                localStorage.setItem('orderState', JSON.stringify(orderState));
+            }
+        }
+
+        function decrementQuantity(menuId) {
+            const checkbox = document.getElementById(`menu-${menuId}`);
+            const quantityInput = document.querySelector(`input[name="quantity-${menuId}"]`);
+            if (checkbox.checked) {
+                let qty = parseInt(quantityInput.value) || 1;
+                if (qty > 1) {
+                    quantityInput.value = qty - 1;
+                    orderState[menuId] = qty - 1;
+                    localStorage.setItem('orderState', JSON.stringify(orderState));
+                }
+            }
+        }
+
+        function changeTab(tab) {
+            const tableNumber = document.getElementById('tableNumber').value;
+            const lang = new URLSearchParams(location.search).get('lang') || 'ja';
+            location.href = `/?tab=${tab}&tableNumber=${tableNumber}&lang=${lang}`;
+        }
+
+        function confirmOrder() {
+            const form = document.getElementById('orderForm');
+            const tableNumber = document.getElementById('tableNumber').value;
+            const selectedItems = [];
+            let totalPrice = 0;
+
+            document.querySelectorAll('input[name="menuIds"]:checked').forEach(checkbox => {
+                const menuId = checkbox.value;
+                const quantity = parseInt(document.querySelector(`input[name="quantity-${menuId}"]`).value) || 1;
+                const price = parseFloat(document.querySelector(`input[name="quantity-${menuId}"]`).closest('.card-body').querySelector('.card-text').textContent.slice(1));
+                const name = document.querySelector(`label[for="menu-${menuId}"]`).closest('.card-body').querySelector('.card-title').textContent;
+                selectedItems.push(`${name} x${quantity} - $${(price * quantity).toFixed(2)}`);
+                totalPrice += price * quantity;
+            });
+
+            if (selectedItems.length === 0) {
+                alert('Please select at least one item.');
+                return;
+            }
+
+            const confirmation = confirm(
+                `Table ${tableNumber}\n\n` +
+                `Order Details:\n${selectedItems.join('\n')}\n\n` +
+                `Total: $${totalPrice.toFixed(2)}\n\n` +
+                'Press OK to confirm, Cancel to abort.'
+            );
+
+            if (confirmation) {
+                form.submit();
+            }
+        }
+    </script>
+</body>
+</html>

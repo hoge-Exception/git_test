@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Confirmation</title>
+</head>
+<body>
+    <h1>Order Confirmation</h1>
+    <h3>Your Recent Orders:</h3>
+    <ul>
+        <li th:each="order : ${orders}" th:text="${'Table ' + order.tableNumber + ': ' + order.menu.name + ' x' + order.quantity + ' - $' + (order.menu.price * order.quantity)}"></li>
+    </ul>
+    <p th:text="'Total: $' + ${totalPrice}"></p>
+    <a href="/">Back to Menu</a>
+</body>
+</html>
