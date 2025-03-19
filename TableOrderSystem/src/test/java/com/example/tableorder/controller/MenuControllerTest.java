@@ -10,7 +10,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.ui.Model;
 
+import com.example.tableorder.model.Menu;
 import com.example.tableorder.service.MenuService;
+
+
 
 public class MenuControllerTest {
 
@@ -59,4 +62,28 @@ public class MenuControllerTest {
 		// 追加検証（オプション）: menuService.getAllMenus() が1回だけ呼ばれたことを確認
 	    verify(menuService, times(1)).getAllMenus();
 	}
+	
+	// MultipartFile型のオブジェクトについて調べてからテストする
+	
+	@Test
+	@DisplayName("addMenuメソッドのテスト")
+	void testAddMenu() {
+		// 準備
+//		when(menuService.saveMenu("唐揚げ", 1000, "肉", "/hoge/")).thenReturn();
+		fail();
+	}
+	
+	// このメソッドもどんなテストをす
+	
+	@Test
+	@DisplayName("showEditMenuFormメソッドのテスト")
+	void testShowEditMenuForm() {
+		// 準備
+		// 実行
+		Menu menu = mock();
+		
+	}
+	
+	
+	
 }
