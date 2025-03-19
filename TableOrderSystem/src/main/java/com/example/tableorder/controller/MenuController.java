@@ -2,7 +2,6 @@ package com.example.tableorder.controller;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,8 +20,12 @@ import com.example.tableorder.service.MenuService;
 @PreAuthorize("hasRole('STAFF')")
 public class MenuController {
 
-    @Autowired
-    private MenuService menuService;
+//    @Autowired
+    private final MenuService menuService;
+    
+    public MenuController(MenuService menuService) {
+    	this.menuService = menuService;
+    }
 
     @GetMapping
     public String showMenuManagement(Model model) {
