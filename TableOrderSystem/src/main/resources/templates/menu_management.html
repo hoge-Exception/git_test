@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="#{menu_management.title}"></title>
+    <link th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container my-4">
+        <h1 class="text-center mb-4" th:text="#{menu_management.title}"></h1>
+        <div class="d-flex justify-content-center mb-4">
+            <a th:href="@{/menu-management(lang='ja')}" class="btn btn-outline-primary mx-1">日本語</a>
+            <a th:href="@{/menu-management(lang='en')}" class="btn btn-outline-primary mx-1">English</a>
+            <a th:href="@{/menu-management(lang='zh')}" class="btn btn-outline-primary mx-1">中文</a>
+        </div>
+        <a th:href="@{/menu-management/add}" class="btn btn-primary mb-3" th:text="#{menu_management.add_new_menu}"></a>
+        <a th:href="@{/}" class="btn btn-secondary mb-3 ms-2" th:text="#{menu_management.back_to_menu}"></a>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th th:text="#{menu_management.id}"></th>
+                    <th th:text="#{menu_management.name}"></th>
+                    <th th:text="#{menu_management.price}"></th>
+                    <th th:text="#{menu_management.category}"></th>
+                    <th th:text="#{menu_management.image}"></th>
+                    <th th:text="#{menu_management.actions}"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="menu : ${menus}">
+                    <td th:text="${menu.id}"></td>
+                    <td th:text="${menu.name}"></td>
+                    <td th:text="'$' + ${menu.price}"></td>
+                    <td th:text="${menu.category}"></td>
+                    <td><img th:src="${menu.imageUrl}" alt="Menu Image" style="max-width: 100px;" th:unless="${menu.imageUrl == null}"/></td>
+                    <td>
+                        <a th:href="@{/menu-management/edit/{id}(id=${menu.id})}" class="btn btn-sm btn-warning" th:text="#{menu_management.edit}"></a>
+                        <form th:action="@{/menu-management/delete/{id}(id=${menu.id})}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')" th:text="#{menu_management.delete}"></button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
